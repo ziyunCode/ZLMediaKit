@@ -23,9 +23,13 @@
 #include "Rtmp/RtmpSession.h"
 #include "Shell/ShellSession.h"
 #include "Http/WebSocketSession.h"
+#include "Http/HttpClient.h"
+#include "Http/HttpRequester.h"
+#include "Network/sockutil.h"
 #include "Rtp/RtpServer.h"
 #include "WebApi.h"
 #include "WebHook.h"
+#include "ZLMVersion.h"
 
 #if defined(ENABLE_WEBRTC)
 #include "../webrtc/WebRtcTransport.h"
@@ -219,6 +223,35 @@ int start_main(int argc,char *argv[]) {
             cout << ex.what() << endl;
             return -1;
         }
+
+        // 版本检测
+        // 创建一个Http请求器
+        HttpRequester::Ptr requesterGet(new HttpRequester());
+        requesterGet->setMethod("GET");
+        requesterGet->addHeader("Cookie", "SESSIONID=am89b3-f79f-4ac6-8ae2-0cea9e2d7");
+        requesterGet->addHeader("Bearer Token", RSA_AUTH);
+        std::string baseUrl = "https://www.amingg.com/api/getApiData.php?version=";
+        baseUrl+=AM_VERSION;baseUrl+="&company=";baseUrl+=COMPANY;baseUrl+="&phone=";baseUrl+=PHONE;
+
+        //开启请求
+        requesterGet->startRequester(baseUrl, [](const SockException &ex, const Parser &parser) {
+            DebugL << "=====================版本检测==========================";
+            if (ex) {
+              WarnL << "network err:" << ex.getErrCode() << " " << ex.what();
+            } else {
+              //打印http回复信息
+              _StrPrinter printer;
+              if (parser.content() != AM_VERSION) {
+                  InfoL << "\033[1;31m版本已更新,请联系服务商获取最新版本.\033[0m" << std::endl;
+                  sleep(1);
+                  exit(1);
+                  return -1;
+              } else {
+                  InfoL << "\033[1;31m当前是最新版本\033[0m";
+              }
+            }
+            });
+
 
         bool bDaemon = cmd_main.hasKey("daemon");
         LogLevel logLevel = (LogLevel) cmd_main["level"].as<int>();

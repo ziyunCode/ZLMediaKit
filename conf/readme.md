@@ -14,7 +14,7 @@
 开启合并写，减少发送数据时系统调用次数以及线程间数据共享频率，大大提高转发性能，但是牺牲播放延时和发送平滑度。
 
 ### 5、rtp_proxy.gop_cache
-开启startSendRtp级联接口的gop缓存功能，用于国标级联秒开。该选项不影响zlmediakit对外提供直播服务的秒开。
+开启startSendRtp级联接口的gop缓存功能，用于国标级联秒开。该选项不影响AmCloudMedia对外提供直播服务的秒开。
 开启该选项后增加内存使用，对cpu影响较小，如果不调用startSendRtp接口，建议关闭。
 
 ### 6、hls.fileBufSize
