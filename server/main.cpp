@@ -209,6 +209,10 @@ public:
     }
 };
 
+
+
+
+
 //全局变量，在WebApi中用于保存配置文件用
 string g_ini_file;
 
@@ -228,30 +232,28 @@ int start_main(int argc,char *argv[]) {
         // 创建一个Http请求器
         HttpRequester::Ptr requesterGet(new HttpRequester());
         requesterGet->setMethod("GET");
-        requesterGet->addHeader("Cookie", "SESSIONID=am89b3-f79f-4ac6-8ae2-0cea9e2d7");
-        requesterGet->addHeader("Bearer Token", RSA_AUTH);
-        std::string baseUrl = "https://www.amingg.com/api/getApiData.php?version=";
-        baseUrl+=AM_VERSION;baseUrl+="&company=";baseUrl+=COMPANY;baseUrl+="&phone=";baseUrl+=PHONE;
-
-        //开启请求
-        requesterGet->startRequester(baseUrl, [](const SockException &ex, const Parser &parser) {
-            DebugL << "=====================版本检测==========================";
+        // 设置http请求头，我们假设设置cookie，当然你也可以设置其他http头
+        requesterGet->addHeader("Cookie", "SESSIONID=e1aa89b3-f79f-4ac6-8ae2-0cea9ae8e2d7");
+        // 开启请求，该api会返回当前主机外网ip等信息
+        requesterGet->startRequester("https://video.51620.net/getApiData.php", [](const SockException &ex, const Parser &parser) { // http回复body
+            InfoL << "=======版本检测======";
+            string expectedResponse = AM_VERSION;
             if (ex) {
-              WarnL << "network err:" << ex.getErrCode() << " " << ex.what();
+                // 网络相关的错误
+                WarnL << "network err:" << ex.getErrCode() << " " << ex.what();
             } else {
-              //打印http回复信息
-              _StrPrinter printer;
-              if (parser.content() != AM_VERSION) {
-                  InfoL << "\033[1;31m版本已更新,请联系服务商获取最新版本.\033[0m" << std::endl;
-                  sleep(1);
-                  exit(1);
-                  return -1;
-              } else {
-                  InfoL << "\033[1;31m当前是最新版本\033[0m";
-              }
+                // 打印http回复信息
+                _StrPrinter printer;
+                if (parser.content() != expectedResponse) {
+                    InfoL << "\033[1;31m版本已更新,请联系服务商获取最新版本.\033[0m" << std::endl;
+                    sleep(1);
+                    exit(1);
+                    return -1;
+                } else {
+                    InfoL << "\033[1;31m当前是最新版本\033[0m";
+                }
             }
-            });
-
+        });
 
         bool bDaemon = cmd_main.hasKey("daemon");
         LogLevel logLevel = (LogLevel) cmd_main["level"].as<int>();
