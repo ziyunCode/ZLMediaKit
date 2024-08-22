@@ -29,7 +29,6 @@
 #include "Rtp/RtpServer.h"
 #include "WebApi.h"
 #include "WebHook.h"
-#include "ZLMVersion.h"
 
 #if defined(ENABLE_WEBRTC)
 #include "../webrtc/WebRtcTransport.h"
